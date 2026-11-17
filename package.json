@@ -1,0 +1,12 @@
+{
+  "name": "kotlen-backup",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "server"
+  ],
+  "scripts": {
+    "start": "node server.js"
+  }
+}
