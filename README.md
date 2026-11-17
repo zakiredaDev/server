@@ -13,7 +13,7 @@ Set these environment variables in the hosting dashboard (do not commit real key
 - `SUPABASE_SECRET_KEY`: a server-side Supabase Secret API key; keep it on the server only
 - `SUPABASE_BUCKET`: the name of a private Storage bucket you created
 - `UPLOAD_API_KEY`: a random value of at least 32 bytes; use the same value as Android's `kotlenUploadApiKey`
-- `MAX_FILE_MB`: maximum accepted media size in MB, no greater than the bucket limit
+- `MAX_FILE_MB`: maximum accepted media size in MB; the server caps it at 50 MB
 - `PORT`: usually supplied automatically by the host; otherwise the server defaults to 3000
 - `SUPABASE_TUS_ENDPOINT`: optional; leave it unset for standard Supabase projects, and the server derives it from `SUPABASE_URL`
 

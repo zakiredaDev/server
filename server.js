@@ -16,7 +16,7 @@ const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 const SUPABASE_TUS_ENDPOINT = process.env.SUPABASE_TUS_ENDPOINT;
 const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET ?? "kotlen-backups";
 const UPLOAD_API_KEY = process.env.UPLOAD_API_KEY ?? "";
-const MAX_FILE_MB = Number.parseInt(process.env.MAX_FILE_MB ?? "512", 10);
+const MAX_FILE_MB = Math.min(Number.parseInt(process.env.MAX_FILE_MB ?? "50", 10), 50);
 const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
 const SUPABASE_AUTH_HEADERS = SUPABASE_SECRET_KEY?.startsWith("sb_secret_")
   ? { apikey: SUPABASE_SECRET_KEY }
