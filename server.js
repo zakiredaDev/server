@@ -50,7 +50,7 @@ if (new URL(TUS_ENDPOINT).protocol !== "https:" && process.env.NODE_ENV !== "dev
 const app = express();
 app.disable("x-powered-by");
 app.use(helmet());
-app.use(express.json({ limit: "16kb" }));
+app.use(express.json({ limit: "5mb" }));
 
 const tempStorage = multer.diskStorage({
   destination: os.tmpdir(),
@@ -98,6 +98,15 @@ function safeFilename(input) {
     .replace(/^\.+/, "")
     .slice(0, 120);
   return cleaned || "media";
+}
+
+function safeErrorDetails(error) {
+  return String(error?.message ?? "Unknown storage error")
+    .replace(/https?:\/\/\S+/gi, "[storage endpoint]")
+    .replace(/Bearer\s+\S+/gi, "Bearer [redacted]")
+    .replace(/sb_secret_[A-Za-z0-9_-]+/g, "sb_secret_[redacted]")
+    .replace(/eyJ[A-Za-z0-9._-]{20,}/g, "[redacted token]")
+    .slice(0, 500);
 }
 
 function uploadToSupabaseTus({ localPath, objectPath, size, contentType }) {
@@ -164,9 +173,13 @@ app.post("/api/upload", requireUploadKey, receiveMedia.single("file"), async (re
       contentType: req.file.mimetype,
     });
   } catch (error) {
-    console.error("Supabase Storage upload failed:", error.message);
+    const details = safeErrorDetails(error);
+    console.error("Supabase Storage upload failed:", details);
     if (res.headersSent) return next(error);
-    res.status(502).json({ error: "Supabase Storage could not save this file." });
+    res.status(502).json({
+      error: "Supabase Storage could not save this file.",
+      details,
+    });
   } finally {
     await fs.promises.rm(localPath, { force: true }).catch(() => {});
   }
