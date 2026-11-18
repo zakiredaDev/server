@@ -1,22 +1,28 @@
-# Kotlen upload server - deployment
+# StudyHub Node server deployment
 
-Upload the files in this folder directly into the root of the Git repository used by the hosting provider. The files must be side by side: `server.js`, `package.json`, `.env.example`, and `.gitignore`.
+Upload every file in this folder to the root of the Node service's repository. Keep `server.js`, `package.json`, `.env.example`, and `.gitignore` together.
 
-Use these hosting commands:
+Use the hosting commands:
 
 - Build: `npm install`
 - Start: `node server.js`
 
-Set these environment variables in the hosting dashboard (do not commit real keys):
+Configure these variables in the hosting dashboard; do not put real credentials in the repository:
 
-- `SUPABASE_URL`: your Supabase project URL, such as `https://PROJECT_REF.supabase.co`
-- `SUPABASE_SECRET_KEY`: a server-side Supabase Secret API key; keep it on the server only
-- `SUPABASE_BUCKET`: the name of a private Storage bucket you created
-- `UPLOAD_API_KEY`: a random value of at least 32 bytes; use the same value as Android's `kotlenUploadApiKey`
-- `MAX_FILE_MB`: maximum accepted media size in MB; the server caps it at 50 MB
-- `PORT`: usually supplied automatically by the host; otherwise the server defaults to 3000
-- `SUPABASE_TUS_ENDPOINT`: optional; leave it unset for standard Supabase projects, and the server derives it from `SUPABASE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_SECRET_KEY`
+- `SUPABASE_BUCKET` (private bucket)
+- `UPLOAD_API_KEY` (same value compiled into the APK)
+- `MAX_FILE_MB=50`
+- `MONGODB_URI` (Atlas connection string)
+- `MONGODB_DB_NAME` (your database name)
+- `MONGODB_COLLECTION=users`
+- `PORT` if the host does not provide it
 
-The upload endpoint is `https://YOUR_HOST/api/upload`. Health check: `https://YOUR_HOST/health`.
+`SUPABASE_TUS_ENDPOINT` is optional; the server derives it from `SUPABASE_URL` when unset.
 
-Create the Storage bucket as private. The server accepts one image or video per request in multipart field `file`, then uploads it to Supabase Storage using resumable TUS chunks.
+`POST /api/upload` stores media with a safe ASCII object name based on device/media IDs and the MIME type, avoiding problems with non-English original filenames. `POST /api/device-info` updates a device record in the MongoDB `users` collection. On app launch it records device model, Android version, CPU, RAM, local storage, battery, media/ring/notification volume, screen brightness, the observed public IP, and last-seen time. The record is keyed by the app's random `deviceId`; there is no person/account login in the app.
+
+The phone must install the updated APK, and this server package must be deployed, before new diagnostics appear. Volume and brightness are sampled on app open, not streamed live. If MongoDB is unavailable, device-info saving returns an error while media uploads remain enabled.
+
+Health check: `GET /health`.
