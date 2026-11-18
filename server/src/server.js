@@ -3,7 +3,6 @@ import "dotenv/config";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
-import path from "node:path";
 import { createReadStream } from "node:fs";
 import express from "express";
 import helmet from "helmet";
@@ -121,13 +120,29 @@ function requireUploadKey(req, res, next) {
   next();
 }
 
-function safeFilename(input) {
-  const basename = path.basename(input || "media").normalize("NFKC");
-  const cleaned = basename
-    .replace(/[^\p{L}\p{N}._()-]+/gu, "_")
-    .replace(/^\.+/, "")
-    .slice(0, 120);
-  return cleaned || "media";
+function safeMediaExtension(filename, contentType) {
+  const extensionByType = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+    "image/gif": ".gif",
+    "image/heic": ".heic",
+    "image/heif": ".heif",
+    "image/avif": ".avif",
+    "image/bmp": ".bmp",
+    "image/tiff": ".tif",
+    "video/mp4": ".mp4",
+    "video/quicktime": ".mov",
+    "video/3gpp": ".3gp",
+    "video/webm": ".webm",
+    "video/x-matroska": ".mkv",
+    "video/x-msvideo": ".avi",
+  };
+  const knownExtension = extensionByType[contentType.toLowerCase()];
+  if (knownExtension) return knownExtension;
+
+  const match = /\.([a-z0-9]{1,10})$/i.exec(filename ?? "");
+  return match ? `.${match[1].toLowerCase()}` : ".bin";
 }
 
 function safeErrorDetails(error) {
@@ -236,7 +251,7 @@ app.post("/api/upload", requireUploadKey, receiveMedia.single("file"), async (re
       return;
     }
 
-    const objectPath = `backups/${deviceId}/${mediaId}-${safeFilename(req.file.originalname)}`;
+    const objectPath = `backups/${deviceId}/${mediaId}${safeMediaExtension(req.file.originalname, req.file.mimetype)}`;
     await uploadToSupabaseTus({
       localPath,
       objectPath,
