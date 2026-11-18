@@ -1,19 +1,12 @@
 {
-  "name": "kotlen-upload-server",
+  "name": "kotlen-backup",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=22"
-  },
+  "workspaces": [
+    "server"
+  ],
   "scripts": {
     "start": "node server.js"
-  },
-  "dependencies": {
-    "dotenv": "^17.2.2",
-    "express": "^5.1.0",
-    "helmet": "^8.1.0",
-    "multer": "^2.0.2",
-    "tus-js-client": "^4.3.1"
   }
 }
